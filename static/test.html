@@ -5,22 +5,24 @@
 <title>AToL Sample API — Test Console</title>
 <style>
   :root {
-    --bg: #0f1115;
-    --panel: #171a21;
-    --panel-border: #2a2e38;
-    --text: #e6e8ec;
-    --muted: #8b93a3;
-    --accent: #5b9dff;
-    --ok: #4ade80;
-    --ok-bg: #10281c;
-    --err: #f87171;
-    --err-bg: #2a1414;
+    --bg: #f4f6f8;
+    --panel: #ffffff;
+    --panel-border: #dbe1e8;
+    --text: #1f2937;
+    --muted: #64748b;
+    --accent: #205a86;
+    --accent-dark: #163f5f;
+    --accent-soft: #e8f0f6;
+    --ok: #1e7e34;
+    --ok-bg: #e6f4ea;
+    --err: #b02a37;
+    --err-bg: #fbe7e9;
     --mono: "SF Mono", "Menlo", "Consolas", monospace;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
     background: var(--bg);
     color: var(--text);
     padding: 24px;
@@ -28,6 +30,7 @@
   h1 {
     font-size: 20px;
     margin: 0 0 4px;
+    color: var(--accent-dark);
   }
   .subtitle {
     color: var(--muted);
@@ -45,6 +48,7 @@
     border: 1px solid var(--panel-border);
     border-radius: 10px;
     padding: 16px 18px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
   }
   .card h2 {
     font-size: 14px;
@@ -52,6 +56,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    color: var(--text);
   }
   .card h2 .method {
     font-family: var(--mono);
@@ -59,8 +64,8 @@
     font-weight: 700;
     padding: 2px 6px;
     border-radius: 4px;
-    background: #1e2530;
-    color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent-dark);
   }
   .card .desc {
     color: var(--muted);
@@ -75,13 +80,18 @@
   }
   input, select, textarea {
     width: 100%;
-    background: #0d0f13;
+    background: #ffffff;
     border: 1px solid var(--panel-border);
     color: var(--text);
     border-radius: 6px;
     padding: 7px 9px;
     font-size: 13px;
     font-family: var(--mono);
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
   }
   textarea {
     min-height: 110px;
@@ -100,7 +110,7 @@
   }
   button {
     background: var(--accent);
-    color: #0b0e13;
+    color: #ffffff;
     border: none;
     border-radius: 6px;
     padding: 7px 14px;
@@ -108,18 +118,20 @@
     font-weight: 600;
     cursor: pointer;
   }
-  button:hover { filter: brightness(1.1); }
+  button:hover { background: var(--accent-dark); }
   button.secondary {
     background: transparent;
     color: var(--text);
     border: 1px solid var(--panel-border);
   }
+  button.secondary:hover { background: var(--accent-soft); }
   button.ghost {
     background: transparent;
     color: var(--muted);
     border: 1px dashed var(--panel-border);
     font-weight: 400;
   }
+  button.ghost:hover { background: var(--bg); }
   .response {
     margin-top: 12px;
   }
@@ -132,10 +144,10 @@
   }
   .status-2xx { background: var(--ok-bg); color: var(--ok); }
   .status-4xx, .status-5xx { background: var(--err-bg); color: var(--err); }
-  .status-pending { background: #1e2530; color: var(--muted); }
+  .status-pending { background: var(--accent-soft); color: var(--muted); }
   pre {
     margin: 0;
-    background: #0a0c10;
+    background: #f7f9fb;
     border: 1px solid var(--panel-border);
     border-radius: 6px;
     padding: 10px 12px;
@@ -155,7 +167,8 @@
   }
   .footer-note code {
     font-family: var(--mono);
-    background: #1e2530;
+    background: var(--accent-soft);
+    color: var(--accent-dark);
     padding: 1px 5px;
     border-radius: 4px;
   }
