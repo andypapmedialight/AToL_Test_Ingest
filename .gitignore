@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+atol.db
+atol.db-journal
+.idea/

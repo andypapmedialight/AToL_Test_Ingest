@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AToL Sample API — Admin Log</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-border: #2a2e38;
+    --text: #e6e8ec;
+    --muted: #8b93a3;
+    --accent: #5b9dff;
+    --ok: #4ade80;
+    --ok-bg: #10281c;
+    --err: #f87171;
+    --err-bg: #2a1414;
+    --warn: #fbbf24;
+    --warn-bg: #2a2210;
+    --mono: "SF Mono", "Menlo", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .subtitle { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  select, button {
+    background: #0d0f13;
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12.5px;
+    font-family: inherit;
+  }
+  button {
+    background: var(--accent);
+    color: #0b0e13;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { filter: brightness(1.1); }
+  button.secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--panel-border);
+    font-weight: 500;
+  }
+  label.check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .count {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  thead th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  tbody tr.row {
+    cursor: pointer;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  tbody tr.row:hover { background: #1b1f29; }
+  tbody tr.row td {
+    padding: 9px 12px;
+    font-size: 12.5px;
+    font-family: var(--mono);
+    white-space: nowrap;
+  }
+  td.path {
+    white-space: normal;
+    word-break: break-all;
+    font-family: var(--mono);
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .badge.status-2 { background: var(--ok-bg); color: var(--ok); }
+  .badge.status-4 { background: var(--err-bg); color: var(--err); }
+  .badge.status-5 { background: var(--warn-bg); color: var(--warn); }
+  .method {
+    font-weight: 700;
+    color: var(--accent);
+  }
+  tr.detail td {
+    background: #0d0f13;
+    padding: 12px;
+  }
+  tr.detail { display: none; }
+  tr.detail.open { display: table-row; }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .detail-grid h4 {
+    margin: 0 0 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  pre {
+    margin: 0;
+    background: #0a0c10;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-family: var(--mono);
+    max-height: 280px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .empty {
+    color: var(--muted);
+    font-size: 13px;
+    padding: 30px;
+    text-align: center;
+  }
+  .footer-note {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 12px;
+    max-width: 1000px;
+  }
+  .footer-note code {
+    font-family: var(--mono);
+    background: #1e2530;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>AToL Sample API — Admin Log</h1>
+<p class="subtitle">Every request under /samples and /status, and exactly what the API sent back. Click a row to expand it.</p>
+
+<div class="toolbar">
+  <select id="filter-status">
+    <option value="all">All statuses</option>
+    <option value="2">2xx success</option>
+    <option value="4">4xx client error</option>
+    <option value="5">5xx server error</option>
+  </select>
+  <button onclick="load()">Refresh</button>
+  <button class="secondary" onclick="toggleAuto()" id="auto-btn">Auto-refresh: off</button>
+  <span class="count" id="row-count"></span>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:160px">Time</th>
+      <th style="width:70px">Method</th>
+      <th>Path</th>
+      <th style="width:70px">Status</th>
+      <th style="width:80px">Duration</th>
+    </tr>
+  </thead>
+  <tbody id="log-body">
+    <tr><td colspan="5" class="empty">Loading…</td></tr>
+  </tbody>
+</table>
+
+<p class="footer-note">
+  Backed by <code>GET /admin/log</code>, which reads the <code>SubmissionLog</code> table -- populated by HTTP
+  middleware that wraps every request under <code>/samples</code> and <code>/status</code>, success or failure alike.
+  This is a broader net than the <code>blocked_on_validation</code> count on <code>/status</code>: that one only
+  ever counts validation failures; this page shows everything, including what a successful request's response
+  actually looked like. Not one of the six required endpoints -- a dev/admin convenience.
+</p>
+
+<script>
+let autoTimer = null;
+let currentData = [];
+const expandedIds = new Set();
+
+function statusClass(code) {
+  return "status-" + String(code)[0];
+}
+
+function render() {
+  const filter = document.getElementById("filter-status").value;
+  const rows = filter === "all" ? currentData : currentData.filter(r => String(r.status_code)[0] === filter);
+
+  const body = document.getElementById("log-body");
+  document.getElementById("row-count").textContent = `${rows.length} of ${currentData.length} shown`;
+
+  if (rows.length === 0) {
+    body.innerHTML = `<tr><td colspan="5" class="empty">No log entries yet — send something from the test console first.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = "";
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
+    tr.className = "row";
+    const time = new Date(r.timestamp + (r.timestamp.endsWith("Z") ? "" : "Z"))
+      .toLocaleTimeString(undefined, { hour12: false });
+    tr.innerHTML = `
+      <td>${time}</td>
+      <td class="method">${r.method}</td>
+      <td class="path">${r.path}</td>
+      <td><span class="badge ${statusClass(r.status_code)}">${r.status_code}</span></td>
+      <td>${r.duration_ms.toFixed(1)} ms</td>
+    `;
+    const detail = document.createElement("tr");
+    detail.className = "detail";
+    let reqPretty = r.request_body, resPretty = r.response_body;
+    try { reqPretty = JSON.stringify(JSON.parse(r.request_body), null, 2); } catch (e) {}
+    try { resPretty = JSON.stringify(JSON.parse(r.response_body), null, 2); } catch (e) {}
+    detail.innerHTML = `
+      <td colspan="5">
+        <div class="detail-grid">
+          <div>
+            <h4>Request body</h4>
+            <pre>${escapeHtml(reqPretty || "(empty)")}</pre>
+          </div>
+          <div>
+            <h4>Response body</h4>
+            <pre>${escapeHtml(resPretty || "(empty)")}</pre>
+          </div>
+        </div>
+      </td>
+    `;
+    if (expandedIds.has(r.id)) detail.classList.add("open");
+    tr.addEventListener("click", () => {
+      detail.classList.toggle("open");
+      if (detail.classList.contains("open")) expandedIds.add(r.id);
+      else expandedIds.delete(r.id);
+    });
+    body.appendChild(tr);
+    body.appendChild(detail);
+  });
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+}
+
+async function load() {
+  try {
+    const res = await fetch("/admin/log?limit=200");
+    currentData = await res.json();
+    render();
+  } catch (e) {
+    document.getElementById("log-body").innerHTML =
+      `<tr><td colspan="5" class="empty">Couldn't reach /admin/log — is the server running?</td></tr>`;
+  }
+}
+
+function toggleAuto() {
+  const btn = document.getElementById("auto-btn");
+  if (autoTimer) {
+    clearInterval(autoTimer);
+    autoTimer = null;
+    btn.textContent = "Auto-refresh: off";
+  } else {
+    autoTimer = setInterval(load, 3000);
+    btn.textContent = "Auto-refresh: on (3s)";
+  }
+}
+
+document.getElementById("filter-status").addEventListener("change", render);
+load();
+</script>
+
+</body>
+</html>

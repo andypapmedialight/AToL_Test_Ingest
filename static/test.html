@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AToL Sample API — Test Console</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-border: #2a2e38;
+    --text: #e6e8ec;
+    --muted: #8b93a3;
+    --accent: #5b9dff;
+    --ok: #4ade80;
+    --ok-bg: #10281c;
+    --err: #f87171;
+    --err-bg: #2a1414;
+    --mono: "SF Mono", "Menlo", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 24px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 16px;
+    max-width: 1400px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .card h2 {
+    font-size: 14px;
+    margin: 0 0 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .method {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #1e2530;
+    color: var(--accent);
+  }
+  .card .desc {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 0 0 12px;
+  }
+  label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin: 10px 0 4px;
+  }
+  input, select, textarea {
+    width: 100%;
+    background: #0d0f13;
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 7px 9px;
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+  textarea {
+    min-height: 110px;
+    resize: vertical;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  button {
+    background: var(--accent);
+    color: #0b0e13;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { filter: brightness(1.1); }
+  button.secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--panel-border);
+  }
+  button.ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px dashed var(--panel-border);
+    font-weight: 400;
+  }
+  .response {
+    margin-top: 12px;
+  }
+  .response .status-line {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 5px 9px;
+    border-radius: 5px 5px 0 0;
+    display: inline-block;
+  }
+  .status-2xx { background: var(--ok-bg); color: var(--ok); }
+  .status-4xx, .status-5xx { background: var(--err-bg); color: var(--err); }
+  .status-pending { background: #1e2530; color: var(--muted); }
+  pre {
+    margin: 0;
+    background: #0a0c10;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-family: var(--mono);
+    overflow-x: auto;
+    max-height: 320px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .footer-note {
+    max-width: 1400px;
+    margin-top: 20px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .footer-note code {
+    font-family: var(--mono);
+    background: #1e2530;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>AToL Sample API — Test Console</h1>
+<p class="subtitle">Fill in a form, hit the button, see exactly what the API sent back. Talks to this same server, so nothing here needs a separate backend.</p>
+
+<div class="grid">
+
+  <!-- POST /samples -->
+  <div class="card">
+    <h2><span class="method">POST</span> /samples</h2>
+    <p class="desc">Ingest one record. Try the "broken example" button to see the structured 422.</p>
+
+    <label>tolid</label>
+    <input id="s-tolid" value="drMusMusc1" />
+
+    <div class="row">
+      <div>
+        <label>scientific_name</label>
+        <input id="s-name" value="Mus musculus" />
+      </div>
+      <div>
+        <label>taxon_id</label>
+        <input id="s-taxon" value="10090" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>collection_date</label>
+        <input id="s-collected" type="date" value="2026-01-15" />
+      </div>
+      <div>
+        <label>embargo_until (optional)</label>
+        <input id="s-embargo" type="date" />
+      </div>
+    </div>
+
+    <label>platform</label>
+    <select id="s-platform">
+      <option value="pacbio_hifi">pacbio_hifi</option>
+      <option value="ont">ont</option>
+      <option value="hic">hic</option>
+    </select>
+
+    <div class="actions">
+      <button onclick="createSample()">Send</button>
+      <button class="secondary" onclick="fillValidExample()">Fill valid example</button>
+      <button class="ghost" onclick="fillBrokenExample()">Fill broken example</button>
+    </div>
+
+    <div class="response">
+      <div id="create-status" class="status-line status-pending">not sent yet</div>
+      <pre id="create-body">—</pre>
+    </div>
+  </div>
+
+  <!-- POST /samples/batch -->
+  <div class="card">
+    <h2><span class="method">POST</span> /samples/batch</h2>
+    <p class="desc">Paste a JSON array. Mix good and bad records to see per-item accept/reject.</p>
+
+    <label>records (JSON array)</label>
+    <textarea id="batch-input">[
+  {"tolid": "drMusMusc2", "scientific_name": "Mus musculus", "taxon_id": 10090, "collection_date": "2026-02-01", "platform": "ont"},
+  {"tolid": "BADID1234", "scientific_name": "Bad Id", "taxon_id": 1, "collection_date": "2026-01-01", "platform": "hic"},
+  {"tolid": "drMusMusc6", "scientific_name": "Mus musculus", "taxon_id": 10090, "collection_date": "2026-05-01", "embargo_until": "2026-01-01", "platform": "hic"}
+]</textarea>
+
+    <div class="actions">
+      <button onclick="createBatch()">Send batch</button>
+      <button class="secondary" onclick="loadBioplatformsBatch()">Load simulated Bioplatforms batch</button>
+    </div>
+
+    <div class="response">
+      <div id="batch-status" class="status-line status-pending">not sent yet</div>
+      <pre id="batch-body">—</pre>
+    </div>
+  </div>
+
+  <!-- GET /samples -->
+  <div class="card">
+    <h2><span class="method">GET</span> /samples</h2>
+    <p class="desc">List everything stored, optionally filtered by pipeline stage.</p>
+
+    <label>stage filter (optional)</label>
+    <select id="list-stage">
+      <option value="">— all stages —</option>
+      <option value="ingested">ingested</option>
+      <option value="metadata_processed">metadata_processed</option>
+      <option value="assembled">assembled</option>
+      <option value="annotated">annotated</option>
+      <option value="brokered">brokered</option>
+      <option value="note_generated">note_generated</option>
+    </select>
+
+    <div class="actions">
+      <button onclick="listSamples()">Fetch list</button>
+    </div>
+
+    <div class="response">
+      <div id="list-status" class="status-line status-pending">not sent yet</div>
+      <pre id="list-body">—</pre>
+    </div>
+  </div>
+
+  <!-- GET /samples/{id} -->
+  <div class="card">
+    <h2><span class="method">GET</span> /samples/{id}</h2>
+    <p class="desc">Fetch one sample. Embargoed fields come back null until embargo_until passes.</p>
+
+    <label>id</label>
+    <input id="get-id" value="1" />
+
+    <div class="actions">
+      <button onclick="getSample()">Fetch</button>
+    </div>
+
+    <div class="response">
+      <div id="get-status" class="status-line status-pending">not sent yet</div>
+      <pre id="get-body">—</pre>
+    </div>
+  </div>
+
+  <!-- PATCH /samples/{id}/stage -->
+  <div class="card">
+    <h2><span class="method">PATCH</span> /samples/{id}/stage</h2>
+    <p class="desc">Advance one step. Only the next stage in sequence is accepted — no skipping, no going backward. Try targeting "brokered" directly to see it refuse and point you at the dedicated endpoint instead.</p>
+
+    <div class="row">
+      <div>
+        <label>id</label>
+        <input id="stage-id" value="1" />
+      </div>
+      <div>
+        <label>target stage</label>
+        <select id="stage-target">
+          <option value="ingested">ingested</option>
+          <option value="metadata_processed" selected>metadata_processed</option>
+          <option value="assembled">assembled</option>
+          <option value="annotated">annotated</option>
+          <option value="brokered">brokered (will 400 — see above)</option>
+          <option value="note_generated">note_generated (will 400 — see above)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button onclick="advanceStage()">Advance</button>
+    </div>
+
+    <div class="response">
+      <div id="stage-status" class="status-line status-pending">not sent yet</div>
+      <pre id="stage-body">—</pre>
+    </div>
+  </div>
+
+  <!-- POST /samples/{id}/broker -->
+  <div class="card">
+    <h2><span class="method">POST</span> /samples/{id}/broker</h2>
+    <p class="desc">Simulates brokering to ENA: mints a fake accession and moves the sample to "brokered". Only works from "annotated".</p>
+
+    <label>id</label>
+    <input id="broker-id" value="1" />
+
+    <div class="actions">
+      <button onclick="brokerSample()">Broker to ENA</button>
+    </div>
+
+    <div class="response">
+      <div id="broker-status" class="status-line status-pending">not sent yet</div>
+      <pre id="broker-body">—</pre>
+    </div>
+  </div>
+
+  <!-- POST /samples/{id}/genome-note -->
+  <div class="card">
+    <h2><span class="method">POST</span> /samples/{id}/genome-note</h2>
+    <p class="desc">Simulates drafting the automatic Genome Note. Only works from "brokered" — references the ENA accession from the step above.</p>
+
+    <label>id</label>
+    <input id="note-id" value="1" />
+
+    <div class="actions">
+      <button onclick="generateNote()">Generate Genome Note</button>
+    </div>
+
+    <div class="response">
+      <div id="note-status" class="status-line status-pending">not sent yet</div>
+      <pre id="note-body">—</pre>
+    </div>
+  </div>
+
+  <!-- GET /status -->
+  <div class="card">
+    <h2><span class="method">GET</span> /status</h2>
+    <p class="desc">Counts by stage, plus how many records are blocked on validation.</p>
+
+    <div class="actions">
+      <button onclick="getStatus()">Fetch status</button>
+    </div>
+
+    <div class="response">
+      <div id="status-status" class="status-line status-pending">not sent yet</div>
+      <pre id="status-body">—</pre>
+    </div>
+  </div>
+
+</div>
+
+<p class="footer-note">
+  Served from <code>/static/test.html</code> on the same FastAPI app, so every request below is a same-origin
+  <code>fetch()</code> — no CORS configuration needed. For the auto-generated interactive docs instead of this
+  hand-built page, visit <code>/docs</code>.
+</p>
+
+<script>
+async function send(el_status, el_body, method, path, bodyObj) {
+  el_status.textContent = "sending…";
+  el_status.className = "status-line status-pending";
+  el_body.textContent = "—";
+  try {
+    const opts = { method, headers: {} };
+    if (bodyObj !== undefined) {
+      opts.headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(bodyObj);
+    }
+    const res = await fetch(path, opts);
+    const text = await res.text();
+    let pretty = text;
+    try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch (e) { /* not JSON, leave as-is */ }
+
+    el_status.textContent = `${method} ${path} → ${res.status} ${res.statusText}`;
+    el_status.className = "status-line " + (res.status < 300 ? "status-2xx" : res.status < 500 ? "status-4xx" : "status-5xx");
+    el_body.textContent = pretty;
+  } catch (err) {
+    el_status.textContent = "network error";
+    el_status.className = "status-line status-4xx";
+    el_body.textContent = String(err) + "\n\nIs the server running? (fastapi dev main.py / uvicorn main:app --reload)";
+  }
+}
+
+function num(id) {
+  const v = document.getElementById(id).value;
+  return v === "" ? null : Number(v);
+}
+function str(id) {
+  const v = document.getElementById(id).value;
+  return v === "" ? null : v;
+}
+
+function createSample() {
+  const payload = {
+    tolid: str("s-tolid"),
+    scientific_name: str("s-name"),
+    taxon_id: num("s-taxon"),
+    collection_date: str("s-collected"),
+    platform: str("s-platform"),
+  };
+  const embargo = str("s-embargo");
+  if (embargo) payload.embargo_until = embargo;
+  send(
+    document.getElementById("create-status"),
+    document.getElementById("create-body"),
+    "POST", "/samples", payload
+  );
+}
+
+function fillValidExample() {
+  document.getElementById("s-tolid").value = "drMusMusc" + Math.floor(Math.random() * 9000 + 100);
+  document.getElementById("s-name").value = "Mus musculus";
+  document.getElementById("s-taxon").value = "10090";
+  document.getElementById("s-collected").value = "2026-01-15";
+  document.getElementById("s-embargo").value = "";
+  document.getElementById("s-platform").value = "pacbio_hifi";
+}
+
+function fillBrokenExample() {
+  // Bad tolid pattern + embargo_until before collection_date, both at once.
+  document.getElementById("s-tolid").value = "not-a-valid-id";
+  document.getElementById("s-name").value = "Homo sapiens";
+  document.getElementById("s-taxon").value = "9606";
+  document.getElementById("s-collected").value = "2026-06-01";
+  document.getElementById("s-embargo").value = "2026-01-01";
+  document.getElementById("s-platform").value = "pacbio_hifi";
+}
+
+function createBatch() {
+  let parsed;
+  const raw = document.getElementById("batch-input").value;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    const st = document.getElementById("batch-status");
+    st.textContent = "invalid JSON in the textarea";
+    st.className = "status-line status-4xx";
+    document.getElementById("batch-body").textContent = String(e);
+    return;
+  }
+  send(
+    document.getElementById("batch-status"),
+    document.getElementById("batch-body"),
+    "POST", "/samples/batch", parsed
+  );
+}
+
+function listSamples() {
+  const stage = document.getElementById("list-stage").value;
+  const path = stage ? `/samples?stage=${encodeURIComponent(stage)}` : "/samples";
+  send(document.getElementById("list-status"), document.getElementById("list-body"), "GET", path);
+}
+
+function getSample() {
+  const id = document.getElementById("get-id").value;
+  send(document.getElementById("get-status"), document.getElementById("get-body"), "GET", `/samples/${encodeURIComponent(id)}`);
+}
+
+function advanceStage() {
+  const id = document.getElementById("stage-id").value;
+  const stage = document.getElementById("stage-target").value;
+  send(
+    document.getElementById("stage-status"),
+    document.getElementById("stage-body"),
+    "PATCH", `/samples/${encodeURIComponent(id)}/stage`, { stage }
+  );
+}
+
+function brokerSample() {
+  const id = document.getElementById("broker-id").value;
+  send(
+    document.getElementById("broker-status"),
+    document.getElementById("broker-body"),
+    "POST", `/samples/${encodeURIComponent(id)}/broker`
+  );
+}
+
+function generateNote() {
+  const id = document.getElementById("note-id").value;
+  send(
+    document.getElementById("note-status"),
+    document.getElementById("note-body"),
+    "POST", `/samples/${encodeURIComponent(id)}/genome-note`
+  );
+}
+
+async function loadBioplatformsBatch() {
+  const textarea = document.getElementById("batch-input");
+  try {
+    const res = await fetch("/simulate/bioplatforms-ingest");
+    const data = await res.json();
+    textarea.value = JSON.stringify(data, null, 2);
+  } catch (e) {
+    alert("Couldn't reach /simulate/bioplatforms-ingest — is the server running?");
+  }
+}
+
+function getStatus() {
+  send(document.getElementById("status-status"), document.getElementById("status-body"), "GET", "/status");
+}
+</script>
+
+</body>
+</html>
